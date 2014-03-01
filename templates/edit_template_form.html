@@ -1,0 +1,21 @@
+{% extends "default_layout.html" %}
+{% block main %}
+	<div class="row">
+		<form role="form" method="post" >
+			<hidden name="id" value="{{ str(post['_id']) }}"></hidden>
+			<div class="form-group">
+		    <label for="title">Title</label>
+		    <input type="text" class="form-control" id="title" name="title" placeholder="Title Required" autofocus="autofocus">
+		  </div>
+		  <div class="form-group">
+		    <label for="content">Content</label>
+		    <textarea class="form-control" id="content" name="content" placeholder="Content" rows="20"></textarea>
+		  </div>
+			<div class="form-group">
+		    <label for="tags">Tags</label>
+		    <input type="text" class="form-control" id="tags" name="tags" placeholder="Split with space">
+		  </div>
+		  <input type="submit" class="btn btn-primary" />
+		</form>
+	</div>	
+{% endblock main %}
