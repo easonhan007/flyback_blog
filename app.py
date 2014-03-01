@@ -1,3 +1,4 @@
+#-*- coding:utf8 -*-
 from flask import Flask, g, render_template, request, session, redirect, url_for, flash
 from pymongo import Connection
 import datetime
@@ -44,6 +45,15 @@ def post_list():
 	posts = get_lists(page)
 	return render_template('index.html', posts = posts)
 
+@app.route('/show/<post_id>')
+def show_post(post_id):
+	post = get_post(post_id)
+	if(post):
+		return render_template('index.html', posts= [post])
+	else:
+		flash('Can not find post', 'warning')
+		return redirect(url_for('post_list'))
+
 @app.route('/login', methods=['POST', 'GET'])
 def login():
 	if request.method == 'GET':
@@ -79,11 +89,12 @@ def create_post():
 	if request.method == 'POST':
 		data = request.form.to_dict()
 		data['tags'] = split_tags(data['tags'])
-		data['created_at'] = datetime.datetime.now()
+		data['created_at'] = data['updated_at'] = datetime.datetime.now()
 
 		if not data['title']:
 			flash('Title can not be empty', 'warning')
-			return redirect(url_for('create_post'))
+			# return redirect(url_for('create_post'))
+			return render_template('edit_post_form.html', post=data)
 
 		if g.db.posts.insert(data):
 			flash('Create post successfully', 'success')
@@ -99,7 +110,7 @@ def edit_post(post_id):
 	if not is_logged_in(): 
 		flash('You should login first', 'danger')
 		return redirect(url_for('login'))
-		
+
 	post = get_post(post_id)
 	if(post):
 		return render_template('edit_post_form.html', post=post)
@@ -107,7 +118,27 @@ def edit_post(post_id):
 		flash('Can not find this post', 'warning')
 		return redirect(url_for('post_list'))
 
+@app.route('/admin/update_post', methods=['POST'])
+def update_edit():
+	if not is_logged_in(): 
+		flash('You should login first', 'danger')
+		return redirect(url_for('login'))
 
+	data = request.form.to_dict()
+	if not data['title']:
+		flash('Title can not be empty', 'warning')
+		return render_template('edit_post_form.html', post=data)
+	
+	data['tags'] = split_tags(data['tags'])
+	data['updated_at'] = datetime.datetime.now()
+	if g.db.posts.update({'_id': ObjectId(data['id'])}, data):
+		flash('Edit successfully', 'success')
+		return redirect(url_for('post_list'))
+	else:
+		flash('Can not update post', 'danger')
+		return render_template('edit_post_form.html', post=data)
+
+	return 'ok'	
 
 if __name__ == '__main__':
 	app.run()
