@@ -1,15 +1,23 @@
 #-*- coding:utf8 -*-
+import os
 from flask import Flask, g, render_template, request, session, redirect, url_for, flash
 from pymongo import Connection
 import datetime
 import markdown
 from bson.objectid import ObjectId
 
+ENV = os.getenv('ENV', 'development')
+
 def vender_markdown(txt):
 	return markdown.markdown(txt)
 
 app = Flask(__name__)
-app.debug = True
+if not ENV == 'production':
+	app.debug = True
+if ENV == 'production':
+	from werkzeug.contrib.fixers import ProxyFix
+	app.wsgi_app = ProxyFix(app.wsgi_app)
+
 app.secret_key = '\x86\xdb;\x91\x9dQfX4\x151\xc0\xf1\x9c\xc1\xac\x87\xb1uk\x19$\xd0\xbb'
 app.jinja_env.globals.update(vender_markdown=vender_markdown)
 
