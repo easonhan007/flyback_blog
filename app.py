@@ -34,8 +34,8 @@ def get_lists(page=1):
 def get_post(post_id):
 	return g.db.posts.find_one({'_id': ObjectId(post_id)})
 
-def get_lasted_post():
-	return g.db.posts.find_one()
+def update(post_id, data):
+	return g.db.posts.update({'_id': ObjectId(post_id)}, data)
 
 def is_logged_in():
 	if 'user' in session: return True
@@ -98,10 +98,10 @@ def create_post():
 		data = request.form.to_dict()
 		data['tags'] = split_tags(data['tags'])
 		data['created_at'] = data['updated_at'] = datetime.datetime.now()
+		data['creator'] = session['user']
 
 		if not data['title']:
 			flash('Title can not be empty', 'warning')
-			# return redirect(url_for('create_post'))
 			return render_template('edit_post_form.html', post=data)
 
 		if g.db.posts.insert(data):
@@ -127,7 +127,7 @@ def edit_post(post_id):
 		return redirect(url_for('post_list'))
 
 @app.route('/admin/update_post', methods=['POST'])
-def update_edit():
+def update_post():
 	if not is_logged_in(): 
 		flash('You should login first', 'danger')
 		return redirect(url_for('login'))
@@ -139,14 +139,10 @@ def update_edit():
 	
 	data['tags'] = split_tags(data['tags'])
 	data['updated_at'] = datetime.datetime.now()
-	if g.db.posts.update({'_id': ObjectId(data['id'])}, data):
-		flash('Edit successfully', 'success')
-		return redirect(url_for('post_list'))
-	else:
-		flash('Can not update post', 'danger')
-		return render_template('edit_post_form.html', post=data)
-
-	return 'ok'	
+	post_id = data.pop('id', None)
+	update(post_id, data)
+	flash('Edit successfully', 'success')
+	return redirect(url_for('show_post', post_id=post_id))
 
 if __name__ == '__main__':
 	app.run()

@@ -3,7 +3,7 @@
   {% for post in posts %}
     <div class="blog-post">
       <a href="{{ url_for('show_post', post_id=post['_id']) }}"><h2 class="blog-post-title">{{ post['title'] }}</h2></a>
-      <p class="blog-post-meta">{{ post['created_at'] }} by <a href="#">Mark</a></p>
+      <p class="blog-post-meta">{{ post['created_at'] }} by <a href="#">{{ post['creator'] }}</a></p>
       {{ vender_markdown(post['content'])|safe }}
       {% if session['user'] %}
         <a class="pull-right" href="{{ url_for('edit_post', post_id=post['_id']) }}">Edit</a>
