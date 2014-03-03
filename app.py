@@ -31,11 +31,17 @@ def get_lists(page=1):
 	skip = (page - 1) * g.page_size
 	return g.db.posts.find().skip(skip).limit(g.page_size).sort('_id', -1)
 
+def delete_post(post_id):
+	return g.db.posts.remove({'_id': ObjectId(post_id)})
+
 def get_post(post_id):
 	return g.db.posts.find_one({'_id': ObjectId(post_id)})
 
 def update(post_id, data):
 	return g.db.posts.update({'_id': ObjectId(post_id)}, data)
+
+def get_total_page():
+	return g.db.posts.count() / g.page_size + 1
 
 def is_logged_in():
 	if 'user' in session: return True
@@ -51,13 +57,17 @@ def split_tags(tags):
 def post_list():
 	page = int(request.args.get('page', 1))
 	posts = get_lists(page)
-	return render_template('index.html', posts = posts)
+	next_page = page + 1
+	pre_page = page - 1
+	total_page = get_total_page()
+	print '-------------%s' %total_page
+	return render_template('index.html', posts = posts, action='list', current_page=page, next_page=next_page, pre_page=pre_page, total_page=total_page)
 
 @app.route('/show/<post_id>')
 def show_post(post_id):
 	post = get_post(post_id)
 	if(post):
-		return render_template('index.html', posts= [post])
+		return render_template('index.html', posts= [post], action='show')
 	else:
 		flash('Can not find post', 'warning')
 		return redirect(url_for('post_list'))
@@ -143,6 +153,21 @@ def update_post():
 	update(post_id, data)
 	flash('Edit successfully', 'success')
 	return redirect(url_for('show_post', post_id=post_id))
+
+@app.route('/admin/delete_post/<post_id>')
+def del_post(post_id):
+	if not is_logged_in(): 
+		flash('You should login first', 'danger')
+		return redirect(url_for('login'))
+
+	post = get_post(post_id)
+	if post:
+		delete_post(post_id)
+		flash('Delete successfully', 'success')
+		return redirect(url_for('post_list'))
+	else:
+		flash('Can not find this post to delete', 'warning')
+		return redirect(url_for('post_list'))
 
 if __name__ == '__main__':
 	app.run()

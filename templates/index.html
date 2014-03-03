@@ -1,18 +1,33 @@
 {% extends "default_layout.html" %}
 {% block main %}
   {% for post in posts %}
-    <div class="blog-post">
-      <a href="{{ url_for('show_post', post_id=post['_id']) }}"><h2 class="blog-post-title">{{ post['title'] }}</h2></a>
-      <p class="blog-post-meta">{{ post['created_at'] }} by <a href="#">{{ post['creator'] }}</a></p>
+    <div class="blog-post" id="post_top">
+      <h2 class="blog-post-title"><a href="{{ url_for('show_post', post_id=post['_id']) }}">{{ post['title'] }}</a></h2>
+      <p class="blog-post-meta">{{ post['created_at'].strftime('%Y-%m-%d %H:%m') }} by {{ post['creator'] }}</p>
       {{ vender_markdown(post['content'])|safe }}
+      {% if action == 'show' %}
+        <a href="#post_top">Back to top</a>
+      {% endif %}
+
       {% if session['user'] %}
+        <a class="pull-right del-link" href="{{ url_for('del_post', post_id=post['_id']) }}" onclick="return confirm('Are you sure want to dele');">Delete</a>
         <a class="pull-right" href="{{ url_for('edit_post', post_id=post['_id']) }}">Edit</a>
       {% endif %}
     </div>
   {% endfor %}
 
-  <ul class="pager">
-    <li><a href="#">Previous</a></li>
-    <li><a href="#">Next</a></li>
-  </ul>
+  {% if action == 'list' %}
+    <ul class="pager">
+      {% if pre_page >= 1 %}
+        <li><a href="#">Previous</a></li>
+      {% endif %}
+      {% if next_page < total_page %}
+        <li><a href="#">Next</a></li>
+      {% endif %}
+    </ul>
+  {% else %}
+    <ul class="pager">
+      <li><a href="{{ url_for('post_list') }}">Back</a></li>
+    </ul>
+  {% endif %}
 {% endblock main %}
