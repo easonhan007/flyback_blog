@@ -1,5 +1,6 @@
 .DS_Store
 log/**/*
+logs/**/*
 tmp/**/*
 .pyc
 db/*.db
