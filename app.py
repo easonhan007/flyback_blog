@@ -60,7 +60,6 @@ def post_list():
 	next_page = page + 1
 	pre_page = page - 1
 	total_page = get_total_page()
-	print '-------------%s' %total_page
 	return render_template('index.html', posts = posts, action='list', current_page=page, next_page=next_page, pre_page=pre_page, total_page=total_page)
 
 @app.route('/show/<post_id>')
@@ -170,4 +169,10 @@ def del_post(post_id):
 		return redirect(url_for('post_list'))
 
 if __name__ == '__main__':
+	if ENV == 'production':
+		import logging
+		from logging.handlers import RotatingFileHandler
+		handler = RotatingFileHandler('logs/error.log', maxBytes=10000, backupCount=1)
+		handler.setLevel(logging.ERROR)
+		app.logger.addHandler(handler)
 	app.run()
