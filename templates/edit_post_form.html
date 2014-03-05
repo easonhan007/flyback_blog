@@ -3,7 +3,6 @@
 	<div class="row">
 		<form role="form" method="post" action="/admin/update_post">
 			<input type="hidden" name="id" value="{{ post['_id'] }}" />
-			<input type="hidden" name="created_at" value="{{ post['created_at'] }}" />
 			<div class="form-group">
 		    <label for="title">Title</label>
 		    <input type="text" class="form-control" id="title" name="title" autofocus="autofocus" value="{{ post['title'] }}"/>

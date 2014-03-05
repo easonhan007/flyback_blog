@@ -38,7 +38,7 @@ def get_post(post_id):
 	return g.db.posts.find_one({'_id': ObjectId(post_id)})
 
 def update(post_id, data):
-	return g.db.posts.update({'_id': ObjectId(post_id)}, data)
+	return g.db.posts.update({'_id': ObjectId(post_id)}, {'$set': data})
 
 def get_total_page():
 	return g.db.posts.count() / g.page_size + 1
@@ -149,6 +149,7 @@ def update_post():
 	data['tags'] = split_tags(data['tags'])
 	data['updated_at'] = datetime.datetime.now()
 	post_id = data.pop('id', None)
+	origin_post = get_post(post_id)
 	update(post_id, data)
 	flash('Edit successfully', 'success')
 	return redirect(url_for('show_post', post_id=post_id))
